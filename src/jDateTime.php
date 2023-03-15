@@ -1,4 +1,6 @@
-<?php namespace Morilog\Jalali;
+<?php
+
+namespace Morilog\Jalali;
 
 /**
  * Jalali DateTime Class, supports years higher than 2038
@@ -31,25 +33,28 @@
  * the PHP License and are unable to obtain it through the web, please
  * send a note to license@php.net so we can mail you a copy immediately.
  *
- * @package    jDateTime
  * @author     Sallar Kaboli <sallar.kaboli@gmail.com>
  * @author     Omid Pilevar <omid.pixel@gmail.com>
  * @copyright  2003-2012 Sallar Kaboli
  * @license    http://www.php.net/license/3_01.txt  PHP License 3.01
+ *
  * @link       http://sallar.me/projects/jdatetime/
  * @see        DateTime
+ *
  * @version    2.0.0
  */
 class jDateTime
 {
-
     /**
      * Defaults
      */
     private static $jalali = true; //Use Jalali Date, If set to false, falls back to gregorian
+
     private static $convert = true; //Convert numbers to Farsi characters in utf-8
+
     private static $timezone = null; //Timezone String e.g Asia/Tehran, Defaults to Server Timezone Settings
-    private static $temp = array();
+
+    private static $temp = [];
 
     /**
      * jDateTime::Constructor
@@ -61,6 +66,7 @@ class jDateTime
      * create the object without any parameters.
      *
      * @author Sallar Kaboli
+     *
      * @param $convert bool Converts numbers to Farsi
      * @param $jalali bool Converts date to Jalali
      * @param $timezone string Timezone string
@@ -78,7 +84,6 @@ class jDateTime
         if ($timezone !== null) {
             self::$timezone = ($timezone != null) ? $timezone : null;
         }
-
     }
 
     /**
@@ -91,6 +96,7 @@ class jDateTime
      * $obj->date("Y-m-d", time(), false, false, 'America/New_York');
      *
      * @author Sallar Kaboli
+     *
      * @param $format string Acceps format string based on: php.net/date
      * @param $stamp int Unix Timestamp (Epoch Time)
      * @param $convert bool (Optional) forces convert action. pass null to use system default
@@ -103,20 +109,19 @@ class jDateTime
         //Timestamp + Timezone
         $stamp = ($stamp != false) ? $stamp : time();
         $timezone = ($timezone != null) ? $timezone : ((self::$timezone != null) ? self::$timezone : date_default_timezone_get());
-        $obj = new \DateTime('@' . $stamp);
+        $obj = new \DateTime('@'.$stamp);
         $obj->setTimezone(new \DateTimeZone($timezone));
 
         if ((self::$jalali === false && $jalali === null) || $jalali === false) {
             return $obj->format($format);
         } else {
-
             //Find what to replace
-            $chars = (preg_match_all('/([a-zA-Z]{1})/', $format, $chars)) ? $chars[0] : array();
+            $chars = (preg_match_all('/([a-zA-Z]{1})/', $format, $chars)) ? $chars[0] : [];
 
             //Intact Keys
-            $intact = array('B', 'h', 'H', 'g', 'G', 'i', 's', 'I', 'U', 'u', 'Z', 'O', 'P');
+            $intact = ['B', 'h', 'H', 'g', 'G', 'i', 's', 'I', 'U', 'u', 'Z', 'O', 'P'];
             $intact = self::filterArray($chars, $intact);
-            $intactValues = array();
+            $intactValues = [];
 
             foreach ($intact as $k => $v) {
                 $intactValues[$k] = $obj->format($v);
@@ -124,20 +129,19 @@ class jDateTime
             //End Intact Keys
 
             //Changed Keys
-            list($year, $month, $day) = array($obj->format('Y'), $obj->format('n'), $obj->format('j'));
-            list($jyear, $jmonth, $jday) = self::toJalali($year, $month, $day);
+            [$year, $month, $day] = [$obj->format('Y'), $obj->format('n'), $obj->format('j')];
+            [$jyear, $jmonth, $jday] = self::toJalali($year, $month, $day);
 
-            $keys = array('d', 'D', 'j', 'l', 'N', 'S', 'w', 'z', 'W', 'F', 'm', 'M', 'n', 't', 'L', 'o', 'Y', 'y', 'a', 'A', 'c', 'r', 'e', 'T');
-            $keys = self::filterArray($chars, $keys, array('z'));
-            $values = array();
+            $keys = ['d', 'D', 'j', 'l', 'N', 'S', 'w', 'z', 'W', 'F', 'm', 'M', 'n', 't', 'L', 'o', 'Y', 'y', 'a', 'A', 'c', 'r', 'e', 'T'];
+            $keys = self::filterArray($chars, $keys, ['z']);
+            $values = [];
 
             foreach ($keys as $k => $key) {
-
                 $v = '';
                 switch ($key) {
                     //Day
                     case 'd':
-                        $v = sprintf("%02d", $jday);
+                        $v = sprintf('%02d', $jday);
                         break;
                     case 'D':
                         $v = self::getDayNames($obj->format('D'), true);
@@ -165,16 +169,16 @@ class jDateTime
                         }
                         self::$temp['z'] = $v;
                         break;
-                    //Week
+                        //Week
                     case 'W':
                         $v = is_int(self::$temp['z'] / 7) ? (self::$temp['z'] / 7) : intval(self::$temp['z'] / 7 + 1);
                         break;
-                    //Month
+                        //Month
                     case 'F':
                         $v = self::getMonthNames($jmonth);
                         break;
                     case 'm':
-                        $v = sprintf("%02d", $jmonth);
+                        $v = sprintf('%02d', $jmonth);
                         break;
                     case 'M':
                         $v = self::getMonthNames($jmonth, true);
@@ -185,9 +189,9 @@ class jDateTime
                     case 't':
                         $v = ($jmonth == 12) ? 29 : (($jmonth > 6 && $jmonth != 12) ? 30 : 31);
                         break;
-                    //Year
+                        //Year
                     case 'L':
-                        $tmpObj = new \DateTime('@' . (time() - 31536000));
+                        $tmpObj = new \DateTime('@'.(time() - 31536000));
                         $v = $tmpObj->format('L');
                         break;
                     case 'o':
@@ -197,33 +201,31 @@ class jDateTime
                     case 'y':
                         $v = $jyear % 100;
                         break;
-                    //Time
+                        //Time
                     case 'a':
                         $v = ($obj->format('a') == 'am') ? 'ق.ظ' : 'ب.ظ';
                         break;
                     case 'A':
                         $v = ($obj->format('A') == 'AM') ? 'قبل از ظهر' : 'بعد از ظهر';
                         break;
-                    //Full Dates
+                        //Full Dates
                     case 'c':
-                        $v = $jyear . '-' . sprintf("%02d", $jmonth) . '-' . sprintf("%02d", $jday) . 'T';
-                        $v .= $obj->format('H') . ':' . $obj->format('i') . ':' . $obj->format('s') . $obj->format('P');
+                        $v = $jyear.'-'.sprintf('%02d', $jmonth).'-'.sprintf('%02d', $jday).'T';
+                        $v .= $obj->format('H').':'.$obj->format('i').':'.$obj->format('s').$obj->format('P');
                         break;
                     case 'r':
-                        $v = self::getDayNames($obj->format('D'), true) . ', ' . sprintf("%02d", $jday) . ' ' . self::getMonthNames($jmonth, true);
-                        $v .= ' ' . $jyear . ' ' . $obj->format('H') . ':' . $obj->format('i') . ':' . $obj->format('s') . ' ' . $obj->format('P');
+                        $v = self::getDayNames($obj->format('D'), true).', '.sprintf('%02d', $jday).' '.self::getMonthNames($jmonth, true);
+                        $v .= ' '.$jyear.' '.$obj->format('H').':'.$obj->format('i').':'.$obj->format('s').' '.$obj->format('P');
                         break;
-                    //Timezone
+                        //Timezone
                     case 'e':
                         $v = $obj->format('e');
                         break;
                     case 'T':
                         $v = $obj->format('T');
                         break;
-
                 }
                 $values[$k] = $v;
-
             }
             //End Changed Keys
 
@@ -233,14 +235,13 @@ class jDateTime
 
             //Return
             $ret = strtr($format, array_combine($keys, $values));
+
             return
             ($convert === false ||
                 ($convert === null && self::$convert === false) ||
                 ($jalali === false || $jalali === null && self::$jalali === false))
             ? $ret : self::convertNumbers($ret);
-
         }
-
     }
 
     /**
@@ -256,6 +257,7 @@ class jDateTime
      *      Both return the exact same result.
      *
      * @author Sallar Kaboli
+     *
      * @param $format string Acceps format string based on: php.net/date
      * @param $stamp int Unix Timestamp (Epoch Time)
      * @param $timezone string (Optional) forces a different timezone. pass null to use system default
@@ -276,6 +278,7 @@ class jDateTime
      * $obj->strftime("%H", time(), false, false, 'America/New_York');
      *
      * @author Omid Pilevar
+     *
      * @param $format string Acceps format string based on: php.net/date
      * @param $stamp int Unix Timestamp (Epoch Time)
      * @param $jalali bool (Optional) forces jalali conversion. pass null to use system default
@@ -284,25 +287,25 @@ class jDateTime
      */
     public static function strftime($format, $stamp = false, $jalali = null, $timezone = null)
     {
-        $str_format_code = array(
-            "%a", "%A", "%d", "%e", "%j", "%u", "%w",
-            "%U", "%V", "%W",
-            "%b", "%B", "%h", "%m",
-            "%C", "%g", "%G", "%y", "%Y",
-            "%H", "%I", "%l", "%M", "%p", "%P", "%r", "%R", "%S", "%T", "%X", "%z", "%Z",
-            "%c", "%D", "%F", "%s", "%x",
-            "%n", "%t", "%%",
-        );
+        $str_format_code = [
+            '%a', '%A', '%d', '%e', '%j', '%u', '%w',
+            '%U', '%V', '%W',
+            '%b', '%B', '%h', '%m',
+            '%C', '%g', '%G', '%y', '%Y',
+            '%H', '%I', '%l', '%M', '%p', '%P', '%r', '%R', '%S', '%T', '%X', '%z', '%Z',
+            '%c', '%D', '%F', '%s', '%x',
+            '%n', '%t', '%%',
+        ];
 
-        $date_format_code = array(
-            "D", "l", "d", "j", "z", "N", "w",
-            "W", "W", "W",
-            "M", "F", "M", "m",
-            "y", "y", "y", "y", "Y",
-            "H", "h", "g", "i", "A", "a", "h:i:s A", "H:i", "s", "H:i:s", "h:i:s", "H", "H",
-            "D j M H:i:s", "d/m/y", "Y-m-d", "U", "d/m/y",
-            "\n", "\t", "%",
-        );
+        $date_format_code = [
+            'D', 'l', 'd', 'j', 'z', 'N', 'w',
+            'W', 'W', 'W',
+            'M', 'F', 'M', 'm',
+            'y', 'y', 'y', 'y', 'Y',
+            'H', 'h', 'g', 'i', 'A', 'a', 'h:i:s A', 'H:i', 's', 'H:i:s', 'h:i:s', 'H', 'H',
+            'D j M H:i:s', 'd/m/y', 'Y-m-d', 'U', 'd/m/y',
+            "\n", "\t", '%',
+        ];
 
         //Change Strftime format to Date format
         $format = str_replace($str_format_code, $date_format_code, $format);
@@ -326,6 +329,7 @@ class jDateTime
      * $time2 = $obj->mktime(0,0,0,12,23,1989, false);
      *
      * @author Sallar Kaboli
+     *
      * @param $hour int Hour based on 24 hour system
      * @param $minute int Minutes
      * @param $second int Seconds
@@ -345,11 +349,11 @@ class jDateTime
 
         //Convert to Gregorian if necessary
         if ($jalali === true || ($jalali === null && self::$jalali === true)) {
-            list($year, $month, $day) = self::toGregorian($year, $month, $day);
+            [$year, $month, $day] = self::toGregorian($year, $month, $day);
         }
 
         //Create a new object and set the timezone if available
-        $date = $year . '-' . sprintf("%02d", $month) . '-' . sprintf("%02d", $day) . ' ' . $hour . ':' . $minute . ':' . $second;
+        $date = $year.'-'.sprintf('%02d', $month).'-'.sprintf('%02d', $day).' '.$hour.':'.$minute.':'.$second;
 
         if (self::$timezone != null || $timezone != null) {
             $obj = new \DateTime($date, new \DateTimeZone(($timezone != null) ? $timezone : self::$timezone));
@@ -358,7 +362,7 @@ class jDateTime
         }
 
         //Return
-        return $obj->format("U");
+        return $obj->format('U');
     }
 
     /**
@@ -377,6 +381,7 @@ class jDateTime
      * $check = $obj->checkdate(12, 31, 2011, false);
      *
      * @author Omid Pilevar
+     *
      * @param $month int The month is between 1 and 12 inclusive.
      * @param $day int The day is within the allowed number of days for the given month.
      * @param $year int The year is between 1 and 32767 inclusive.
@@ -394,13 +399,12 @@ class jDateTime
         if ($jalali === true || ($jalali === null && self::$jalali === true)) {
             $epoch = self::mktime(0, 0, 0, $month, $day, $year);
 
-            if (self::date("Y-n-j", $epoch, false) == "$year-$month-$day") {
+            if (self::date('Y-n-j', $epoch, false) == "$year-$month-$day") {
                 $ret = true;
             } else {
                 $ret = false;
             }
-        } else //Gregorian Date
-        {
+        } else { //Gregorian Date
             $ret = checkdate($month, $day, $year);
         }
 
@@ -410,15 +414,13 @@ class jDateTime
 
     /**
      * System Helpers below
-     *
      */
-    private static function filterArray($needle, $heystack, $always = array())
+    private static function filterArray($needle, $heystack, $always = [])
     {
         foreach ($heystack as $k => $v) {
-            if (!in_array($v, $needle) && !in_array($v, $always)) {
+            if (! in_array($v, $needle) && ! in_array($v, $always)) {
                 unset($heystack[$k]);
             }
-
         }
 
         return $heystack;
@@ -450,6 +452,7 @@ class jDateTime
                 $n = 7;
                 break;
         }
+
         return ($numeric) ? $n : (($shorten) ? mb_substr($ret, 0, $len, 'UTF-8') : $ret);
     }
 
@@ -482,13 +485,15 @@ class jDateTime
             case '12':$ret = 'اسفند';
                 break;
         }
+
         return ($shorten) ? mb_substr($ret, 0, $len, 'UTF-8') : $ret;
     }
 
     private static function convertNumbers($matches)
     {
-        $farsi_array = array("۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹");
-        $english_array = array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+        $farsi_array = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        $english_array = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
         return str_replace($english_array, $farsi_array, $matches);
     }
 
@@ -500,13 +505,11 @@ class jDateTime
     /**
      * Gregorian to Jalali Conversion
      * Copyright (C) 2000  Roozbeh Pournader and Mohammad Toossi
-     *
      */
     public static function toJalali($g_y, $g_m, $g_d)
     {
-
-        $g_days_in_month = array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
-        $j_days_in_month = array(31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29);
+        $g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        $j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
 
         $gy = $g_y - 1600;
         $gm = $g_m - 1;
@@ -514,7 +517,7 @@ class jDateTime
 
         $g_day_no = 365 * $gy + self::div($gy + 3, 4) - self::div($gy + 99, 100) + self::div($gy + 399, 400);
 
-        for ($i = 0; $i < $gm; ++$i) {
+        for ($i = 0; $i < $gm; $i++) {
             $g_day_no += $g_days_in_month[$i];
         }
 
@@ -538,34 +541,31 @@ class jDateTime
             $j_day_no = ($j_day_no - 1) % 365;
         }
 
-        for ($i = 0; $i < 11 && $j_day_no >= $j_days_in_month[$i]; ++$i) {
+        for ($i = 0; $i < 11 && $j_day_no >= $j_days_in_month[$i]; $i++) {
             $j_day_no -= $j_days_in_month[$i];
         }
 
         $jm = $i + 1;
         $jd = $j_day_no + 1;
 
-        return array($jy, $jm, $jd);
-
+        return [$jy, $jm, $jd];
     }
 
     /**
      * Jalali to Gregorian Conversion
      * Copyright (C) 2000  Roozbeh Pournader and Mohammad Toossi
-     *
      */
     public static function toGregorian($j_y, $j_m, $j_d)
     {
-
-        $g_days_in_month = array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
-        $j_days_in_month = array(31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29);
+        $g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        $j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
 
         $jy = $j_y - 979;
         $jm = $j_m - 1;
         $jd = $j_d - 1;
 
         $j_day_no = 365 * $jy + self::div($jy, 33) * 8 + self::div($jy % 33 + 3, 4);
-        for ($i = 0; $i < $jm; ++$i) {
+        for ($i = 0; $i < $jm; $i++) {
             $j_day_no += $j_days_in_month[$i];
         }
 
@@ -587,7 +587,6 @@ class jDateTime
             } else {
                 $leap = false;
             }
-
         }
 
         $gy += 4 * self::div($g_day_no, 1461);
@@ -608,8 +607,6 @@ class jDateTime
         $gm = $i + 1;
         $gd = $g_day_no + 1;
 
-        return array($gy, $gm, $gd);
-
+        return [$gy, $gm, $gd];
     }
-
 }

@@ -1,10 +1,11 @@
-<?php namespace Morilog\Jalali;
+<?php
+
+namespace Morilog\Jalali;
 
 use Illuminate\Support\ServiceProvider;
 
 class JalaliServiceProvider extends ServiceProvider
 {
-
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -35,7 +36,6 @@ class JalaliServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return array('jalali', 'jDateTime');
+        return ['jalali', 'jDateTime'];
     }
-
 }

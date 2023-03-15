@@ -4,8 +4,8 @@ class jDateTest extends PHPUnit_Framework_TestCase
 {
     public function test_jdate_class_must_instantiable()
     {
-       $object = new \Morilog\Jalali\jDate();
-       $this->assertTrue(is_a($object, \Morilog\Jalali\jDate::class));
+        $object = new \Morilog\Jalali\jDate();
+        $this->assertTrue(is_a($object, \Morilog\Jalali\jDate::class));
     }
 
     public function test_it_must_foregable_and_must_work_fine()
@@ -42,6 +42,4 @@ class jDateTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue('۱۳۹۴-۰۳-۲۳' === $jDate);
     }
-
-
 }

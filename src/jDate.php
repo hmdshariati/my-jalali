@@ -1,4 +1,6 @@
-<?php namespace Morilog\Jalali;
+<?php
+
+namespace Morilog\Jalali;
 
 /**
  * A LaravelPHP helper class for working w/ jalali dates.
@@ -10,26 +12,28 @@
  * http://github.com/swt83/laravel-date
  *
  *
- * @package     jDate
  * @author      Sallar Kaboli <sallar.kaboli@gmail.com>
+ *
  * @link        http://
+ *
  * @basedon     http://github.com/swt83/laravel-date
+ *
  * @license     MIT License
  */
-
 class jDate
 {
     protected $time;
 
-    protected $formats = array(
+    protected $formats = [
         'datetime' => '%Y-%m-%d %H:%M:%S',
         'date' => '%Y-%m-%d',
         'time' => '%H:%M:%S',
-    );
+    ];
 
     public static function forge($str = null)
     {
         $class = __CLASS__;
+
         return new $class($str);
     }
 
@@ -43,7 +47,7 @@ class jDate
             } else {
                 $time = strtotime($str);
 
-                if (!$time) {
+                if (! $time) {
                     $this->time = false;
                 } else {
                     $this->time = $time;
@@ -79,7 +83,7 @@ class jDate
             $time = strtotime($str, $this->time);
 
             // if conversion fails...
-            if (!$time) {
+            if (! $time) {
                 // set time as false
                 $this->time = false;
             } else {
@@ -97,13 +101,13 @@ class jDate
         $time = $this->time();
 
         // catch error
-        if (!$time) {
+        if (! $time) {
             return false;
         }
 
         // build period and length arrays
-        $periods = array('ثانیه', 'دقیقه', 'ساعت', 'روز', 'هفته', 'ماه', 'سال', 'قرن');
-        $lengths = array(60, 60, 24, 7, 4.35, 12, 10);
+        $periods = ['ثانیه', 'دقیقه', 'ساعت', 'روز', 'هفته', 'ماه', 'سال', 'قرن'];
+        $lengths = [60, 60, 24, 7, 4.35, 12, 10];
 
         // get difference
         $difference = $now - $time;
@@ -123,7 +127,7 @@ class jDate
         $difference = intval(round($difference));
 
         // return
-        return number_format($difference) . ' ' . $periods[$j] . ' ' . (isset($negative) ? '' : 'پیش');
+        return number_format($difference).' '.$periods[$j].' '.(isset($negative) ? '' : 'پیش');
     }
 
     public function until()
@@ -132,32 +136,30 @@ class jDate
     }
 
     /**
-     * @param $format
-     * @param $date
      * @return array
      */
     public function parseFromFormat($format, $date)
     {
         // reverse engineer date formats
-        $keys = array(
-            'Y' => array('year', '\d{4}'),
-            'y' => array('year', '\d{2}'),
-            'm' => array('month', '\d{2}'),
-            'n' => array('month', '\d{1,2}'),
-            'M' => array('month', '[A-Z][a-z]{3}'),
-            'F' => array('month', '[A-Z][a-z]{2,8}'),
-            'd' => array('day', '\d{2}'),
-            'j' => array('day', '\d{1,2}'),
-            'D' => array('day', '[A-Z][a-z]{2}'),
-            'l' => array('day', '[A-Z][a-z]{6,9}'),
-            'u' => array('hour', '\d{1,6}'),
-            'h' => array('hour', '\d{2}'),
-            'H' => array('hour', '\d{2}'),
-            'g' => array('hour', '\d{1,2}'),
-            'G' => array('hour', '\d{1,2}'),
-            'i' => array('minute', '\d{2}'),
-            's' => array('second', '\d{2}'),
-        );
+        $keys = [
+            'Y' => ['year', '\d{4}'],
+            'y' => ['year', '\d{2}'],
+            'm' => ['month', '\d{2}'],
+            'n' => ['month', '\d{1,2}'],
+            'M' => ['month', '[A-Z][a-z]{3}'],
+            'F' => ['month', '[A-Z][a-z]{2,8}'],
+            'd' => ['day', '\d{2}'],
+            'j' => ['day', '\d{1,2}'],
+            'D' => ['day', '[A-Z][a-z]{2}'],
+            'l' => ['day', '[A-Z][a-z]{6,9}'],
+            'u' => ['hour', '\d{1,6}'],
+            'h' => ['hour', '\d{2}'],
+            'H' => ['hour', '\d{2}'],
+            'g' => ['hour', '\d{1,2}'],
+            'G' => ['hour', '\d{1,2}'],
+            'i' => ['minute', '\d{2}'],
+            's' => ['second', '\d{2}'],
+        ];
 
         // convert format string to regex
         $regex = '';
@@ -165,34 +167,34 @@ class jDate
         foreach ($chars as $n => $char) {
             $lastChar = isset($chars[$n - 1]) ? $chars[$n - 1] : '';
             $skipCurrent = '\\' == $lastChar;
-            if (!$skipCurrent && isset($keys[$char])) {
-                $regex .= '(?P<' . $keys[$char][0] . '>' . $keys[$char][1] . ')';
-            } else if ('\\' == $char) {
+            if (! $skipCurrent && isset($keys[$char])) {
+                $regex .= '(?P<'.$keys[$char][0].'>'.$keys[$char][1].')';
+            } elseif ('\\' == $char) {
                 $regex .= $char;
             } else {
                 $regex .= preg_quote($char);
             }
         }
 
-        $dt = array();
+        $dt = [];
         $dt['error_count'] = 0;
         // now try to match it
-        if (preg_match('#^' . $regex . '$#', $date, $dt)) {
+        if (preg_match('#^'.$regex.'$#', $date, $dt)) {
             foreach ($dt as $k => $v) {
                 if (is_int($k)) {
                     unset($dt[$k]);
                 }
             }
-            if (!jDateTime::checkdate($dt['month'], $dt['day'], $dt['year'], false)) {
+            if (! jDateTime::checkdate($dt['month'], $dt['day'], $dt['year'], false)) {
                 $dt['error_count'] = 1;
             }
         } else {
             $dt['error_count'] = 1;
         }
-        $dt['errors'] = array();
+        $dt['errors'] = [];
         $dt['fraction'] = '';
         $dt['warning_count'] = 0;
-        $dt['warnings'] = array();
+        $dt['warnings'] = [];
         $dt['is_localtime'] = 0;
         $dt['zone_type'] = 0;
         $dt['zone'] = 0;
@@ -204,19 +206,17 @@ class jDate
             $dt['year'] += $x;
         }
 
-        $dt['year'] = isset($dt['year']) ? (int)$dt['year'] : 0;
-        $dt['month'] = isset($dt['month']) ? (int)$dt['month'] : 0;
-        $dt['day'] = isset($dt['day']) ? (int)$dt['day'] : 0;
-        $dt['hour'] = isset($dt['hour']) ? (int)$dt['hour'] : 0;
-        $dt['minute'] = isset($dt['minute']) ? (int)$dt['minute'] : 0;
-        $dt['second'] = isset($dt['second']) ? (int)$dt['second'] : 0;
+        $dt['year'] = isset($dt['year']) ? (int) $dt['year'] : 0;
+        $dt['month'] = isset($dt['month']) ? (int) $dt['month'] : 0;
+        $dt['day'] = isset($dt['day']) ? (int) $dt['day'] : 0;
+        $dt['hour'] = isset($dt['hour']) ? (int) $dt['hour'] : 0;
+        $dt['minute'] = isset($dt['minute']) ? (int) $dt['minute'] : 0;
+        $dt['second'] = isset($dt['second']) ? (int) $dt['second'] : 0;
 
         return $dt;
     }
 
     /**
-     * @param $format
-     * @param $str
      * @return \DateTime
      */
     public static function dateTimeFromFormat($format, $str)
@@ -227,6 +227,7 @@ class jDate
         $date = new \DateTime();
         $date->setDate($gd[0], $gd[1], $gd[2]);
         $date->setTime($pd['hour'], $pd['minute'], $pd['second']);
+
         return $date;
     }
 }
